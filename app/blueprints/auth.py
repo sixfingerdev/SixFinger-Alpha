@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import db, User, Subscription, EmailVerification
+from app.models import User, Subscription, EmailVerification
 from datetime import datetime, timedelta
 import re
 
@@ -38,7 +38,7 @@ def login():
             flash('Please provide both email and password', 'error')
             return render_template('auth/login.html')
         
-        user = User.query.filter_by(email=email).first()
+        user = User.query_by_email(email)
         
         if user and user.check_password(password):
             if not user.is_active:
@@ -47,7 +47,6 @@ def login():
             
             login_user(user, remember=remember)
             user.last_login = datetime.utcnow()
-            db.session.commit()
             
             next_page = request.args.get('next')
             if next_page:
@@ -93,23 +92,20 @@ def signup():
             return render_template('auth/signup.html')
         
         # Check if user exists
-        if User.query.filter_by(email=email).first():
+        if User.query_by_email(email):
             flash('Email already registered', 'error')
             return render_template('auth/signup.html')
         
-        if User.query.filter_by(username=username).first():
+        if User.query_by_username(username):
             flash('Username already taken', 'error')
             return render_template('auth/signup.html')
         
         # Create user
         user = User(username=username, email=email)
         user.set_password(password)
-        db.session.add(user)
-        db.session.flush()
         
         # Create free subscription
         subscription = Subscription(user_id=user.id, plan='free')
-        db.session.add(subscription)
         
         # Create email verification token
         token = EmailVerification.generate_token()
@@ -118,9 +114,6 @@ def signup():
             token=token,
             expires_at=datetime.utcnow() + timedelta(days=1)
         )
-        db.session.add(verification)
-        
-        db.session.commit()
         
         # TODO: Send verification email
         
@@ -140,7 +133,7 @@ def logout():
 @auth_bp.route('/verify-email/<token>')
 def verify_email(token):
     """Verify email address"""
-    verification = EmailVerification.query.filter_by(token=token).first()
+    verification = EmailVerification.query_by_token(token)
     
     if not verification:
         flash('Invalid verification token', 'error')
@@ -150,11 +143,10 @@ def verify_email(token):
         flash('Verification token has expired', 'error')
         return redirect(url_for('main.index'))
     
-    user = User.query.get(verification.user_id)
+    user = User.query_by_id(verification.user_id)
     if user:
         user.email_verified = True
-        db.session.delete(verification)
-        db.session.commit()
+        EmailVerification.delete_by_token(token)
         flash('Email verified successfully! You can now log in.', 'success')
     
     return redirect(url_for('auth.login'))
@@ -165,7 +157,7 @@ def forgot_password():
     if request.method == 'POST':
         email = request.form.get('email', '').strip().lower()
         
-        user = User.query.filter_by(email=email).first()
+        user = User.query_by_email(email)
         if user:
             # TODO: Send password reset email
             pass

@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, current_app, request, jsonify
 from flask_login import login_required, current_user
 from app.models import APIUsage, APIKey
 from datetime import datetime
-from sqlalchemy import func
 from autonomous_agent import AutonomousAgent
 import time
 
@@ -22,22 +21,15 @@ def dashboard():
     today = datetime.utcnow().date()
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    daily_usage = APIUsage.query.filter(
-        APIUsage.user_id == current_user.id,
-        func.date(APIUsage.timestamp) == today
-    ).count()
-    
-    monthly_usage = APIUsage.query.filter(
-        APIUsage.user_id == current_user.id,
-        APIUsage.timestamp >= month_start
-    ).count()
+    daily_usage = APIUsage.count_by_date(current_user.id, today)
+    monthly_usage = len(APIUsage.query_by_user_id(current_user.id, start_date=month_start))
     
     # Get user's plan and limits
     plan = current_user.get_plan()
     limits = current_app.config['API_RATE_LIMITS'].get(plan, {})
     
     # Get API keys count
-    api_keys_count = APIKey.query.filter_by(user_id=current_user.id, is_active=True).count()
+    api_keys_count = len(APIKey.query_by_user_id(current_user.id, active_only=True))
     
     return render_template('dashboard.html',
                          daily_usage=daily_usage,
@@ -78,8 +70,6 @@ def playground():
 @login_required
 def playground_query():
     """Handle AI queries from the playground"""
-    from app.models import db
-    
     # Check rate limits
     if not current_user.can_make_request():
         return jsonify({
@@ -127,8 +117,6 @@ def playground_query():
             status_code=200,
             response_time=response_time
         )
-        db.session.add(usage)
-        db.session.commit()
         
         return jsonify({
             'success': True,

@@ -3,7 +3,7 @@
 Script to create an admin user for SixFinger Alpha
 """
 import sys
-from app import create_app, db
+from app import create_app
 from app.models import User, Subscription
 
 def create_admin():
@@ -15,7 +15,7 @@ def create_admin():
         
         # Check if admin exists
         admin_email = input("Enter admin email: ").strip().lower()
-        existing = User.query.filter_by(email=admin_email).first()
+        existing = User.query_by_email(admin_email)
         
         if existing:
             print(f"User with email {admin_email} already exists.")
@@ -23,7 +23,6 @@ def create_admin():
             if make_admin == 'y':
                 existing.is_admin = True
                 existing.email_verified = True
-                db.session.commit()
                 print(f"User {existing.username} is now an admin!")
             return
         
@@ -44,17 +43,11 @@ def create_admin():
         )
         user.set_password(password)
         
-        db.session.add(user)
-        db.session.flush()
-        
         # Create subscription
         subscription = Subscription(
             user_id=user.id,
             plan='enterprise'
         )
-        db.session.add(subscription)
-        
-        db.session.commit()
         
         print(f"\nAdmin user created successfully!")
         print(f"Username: {username}")

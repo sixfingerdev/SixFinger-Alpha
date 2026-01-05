@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from functools import wraps
-from app.models import db, User, Subscription, APIKey, APIUsage
-from sqlalchemy import func
+from app.models import User, Subscription, APIKey, APIUsage
 from datetime import datetime, timedelta
 
 admin_bp = Blueprint('admin', __name__)
@@ -23,24 +22,18 @@ def admin_required(f):
 def dashboard():
     """Admin dashboard"""
     # Get statistics
-    total_users = User.query.count()
-    active_users = User.query.filter_by(is_active=True).count()
-    verified_users = User.query.filter_by(email_verified=True).count()
+    total_users = User.count()
+    active_users = User.count_active()
+    verified_users = User.count_verified()
     
     # Subscription statistics
-    subscription_stats = db.session.query(
-        Subscription.plan,
-        func.count(Subscription.id).label('count')
-    ).group_by(Subscription.plan).all()
+    subscription_stats = Subscription.get_plan_stats()
     
     # API usage today
-    today = datetime.utcnow().date()
-    api_requests_today = APIUsage.query.filter(
-        func.date(APIUsage.timestamp) == today
-    ).count()
+    api_requests_today = APIUsage.count_today()
     
     # Recent users
-    recent_users = User.query.order_by(User.created_at.desc()).limit(10).all()
+    recent_users = sorted(User.get_all_users(), key=lambda u: u.created_at, reverse=True)[:10]
     
     return render_template('admin/dashboard.html',
                          total_users=total_users,
@@ -59,17 +52,35 @@ def users():
     per_page = 20
     
     search = request.args.get('search', '')
-    query = User.query
+    all_users = User.get_all_users()
     
     if search:
-        query = query.filter(
-            (User.username.contains(search)) |
-            (User.email.contains(search))
-        )
+        all_users = [u for u in all_users 
+                    if search.lower() in u.username.lower() or search.lower() in u.email.lower()]
     
-    pagination = query.order_by(User.created_at.desc()).paginate(
-        page=page, per_page=per_page, error_out=False
-    )
+    # Sort by created_at desc
+    all_users.sort(key=lambda u: u.created_at, reverse=True)
+    
+    # Simple pagination
+    total = len(all_users)
+    start = (page - 1) * per_page
+    end = start + per_page
+    users_page = all_users[start:end]
+    
+    # Create pagination object
+    class Pagination:
+        def __init__(self, items, page, per_page, total):
+            self.items = items
+            self.page = page
+            self.per_page = per_page
+            self.total = total
+            self.pages = (total + per_page - 1) // per_page
+            self.has_prev = page > 1
+            self.has_next = page < self.pages
+            self.prev_num = page - 1 if self.has_prev else None
+            self.next_num = page + 1 if self.has_next else None
+    
+    pagination = Pagination(users_page, page, per_page, total)
     
     return render_template('admin/users.html',
                          users=pagination.items,
@@ -81,17 +92,17 @@ def users():
 @admin_required
 def user_detail(user_id):
     """View user details"""
-    user = User.query.get_or_404(user_id)
+    user = User.query_by_id(user_id)
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('admin.users'))
     
     # Get user's API keys
-    api_keys = APIKey.query.filter_by(user_id=user_id).all()
+    api_keys = APIKey.query_by_user_id(user_id)
     
     # Get usage statistics
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    monthly_usage = APIUsage.query.filter(
-        APIUsage.user_id == user_id,
-        APIUsage.timestamp >= month_start
-    ).count()
+    monthly_usage = len(APIUsage.query_by_user_id(user_id, start_date=month_start))
     
     return render_template('admin/user_detail.html',
                          user=user,
@@ -103,14 +114,16 @@ def user_detail(user_id):
 @admin_required
 def toggle_user_active(user_id):
     """Toggle user active status"""
-    user = User.query.get_or_404(user_id)
+    user = User.query_by_id(user_id)
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('admin.users'))
     
     if user.id == current_user.id:
         flash('You cannot deactivate your own account', 'error')
         return redirect(url_for('admin.user_detail', user_id=user_id))
     
     user.is_active = not user.is_active
-    db.session.commit()
     
     status = 'activated' if user.is_active else 'deactivated'
     flash(f'User {status} successfully', 'success')
@@ -121,14 +134,16 @@ def toggle_user_active(user_id):
 @admin_required
 def toggle_user_admin(user_id):
     """Toggle user admin status"""
-    user = User.query.get_or_404(user_id)
+    user = User.query_by_id(user_id)
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('admin.users'))
     
     if user.id == current_user.id:
         flash('You cannot modify your own admin status', 'error')
         return redirect(url_for('admin.user_detail', user_id=user_id))
     
     user.is_admin = not user.is_admin
-    db.session.commit()
     
     status = 'granted' if user.is_admin else 'revoked'
     flash(f'Admin privileges {status} successfully', 'success')
@@ -139,7 +154,11 @@ def toggle_user_admin(user_id):
 @admin_required
 def change_user_plan(user_id):
     """Change user's subscription plan"""
-    user = User.query.get_or_404(user_id)
+    user = User.query_by_id(user_id)
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('admin.users'))
+    
     plan = request.form.get('plan')
     
     from flask import current_app
@@ -149,11 +168,9 @@ def change_user_plan(user_id):
     
     if not user.subscription:
         subscription = Subscription(user_id=user_id, plan=plan)
-        db.session.add(subscription)
     else:
         user.subscription.plan = plan
     
-    db.session.commit()
     flash(f'User plan changed to {plan}', 'success')
     return redirect(url_for('admin.user_detail', user_id=user_id))
 
@@ -167,29 +184,19 @@ def analytics():
     start_date = datetime.utcnow() - timedelta(days=days)
     
     # Daily registrations
-    daily_registrations = db.session.query(
-        func.date(User.created_at).label('date'),
-        func.count(User.id).label('count')
-    ).filter(
-        User.created_at >= start_date
-    ).group_by(func.date(User.created_at)).all()
+    from collections import defaultdict
+    daily_reg = defaultdict(int)
+    for user in User.get_all_users():
+        if user.created_at >= start_date:
+            date = user.created_at.date()
+            daily_reg[date] += 1
+    daily_registrations = [(date, count) for date, count in sorted(daily_reg.items())]
     
     # Daily API usage
-    daily_api_usage = db.session.query(
-        func.date(APIUsage.timestamp).label('date'),
-        func.count(APIUsage.id).label('count')
-    ).filter(
-        APIUsage.timestamp >= start_date
-    ).group_by(func.date(APIUsage.timestamp)).all()
+    daily_api_usage = APIUsage.get_daily_stats(start_date)
     
     # Top users by API usage
-    top_users = db.session.query(
-        User.username,
-        User.email,
-        func.count(APIUsage.id).label('request_count')
-    ).join(APIUsage).filter(
-        APIUsage.timestamp >= start_date
-    ).group_by(User.id).order_by(func.count(APIUsage.id).desc()).limit(10).all()
+    top_users = APIUsage.get_top_users(start_date, limit=10)
     
     return render_template('admin/analytics.html',
                          daily_registrations=daily_registrations,

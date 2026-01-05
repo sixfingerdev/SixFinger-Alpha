@@ -1,8 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models import db, APIKey, APIUsage
+from app.models import APIKey, APIUsage
 from datetime import datetime, timedelta
-from sqlalchemy import func
 
 developer_bp = Blueprint('developer', __name__)
 
@@ -10,19 +9,20 @@ developer_bp = Blueprint('developer', __name__)
 @login_required
 def portal():
     """Developer portal home"""
-    api_keys = APIKey.query.filter_by(user_id=current_user.id).all()
+    api_keys = APIKey.query_by_user_id(current_user.id)
     
     # Get usage statistics
     today = datetime.utcnow().date()
     week_ago = datetime.utcnow() - timedelta(days=7)
     
-    daily_stats = db.session.query(
-        func.date(APIUsage.timestamp).label('date'),
-        func.count(APIUsage.id).label('count')
-    ).filter(
-        APIUsage.user_id == current_user.id,
-        APIUsage.timestamp >= week_ago
-    ).group_by(func.date(APIUsage.timestamp)).all()
+    # Calculate daily stats
+    from collections import defaultdict
+    daily_counts = defaultdict(int)
+    for usage in APIUsage.query_by_user_id(current_user.id, start_date=week_ago):
+        date = usage.timestamp.date()
+        daily_counts[date] += 1
+    
+    daily_stats = [(date, count) for date, count in sorted(daily_counts.items())]
     
     return render_template('developer/portal.html',
                          api_keys=api_keys,
@@ -39,7 +39,7 @@ def create_api_key():
         return redirect(url_for('developer.portal'))
     
     # Check if user has reached the limit
-    existing_keys = APIKey.query.filter_by(user_id=current_user.id, is_active=True).count()
+    existing_keys = len(APIKey.query_by_user_id(current_user.id, active_only=True))
     max_keys = 10
     
     if existing_keys >= max_keys:
@@ -52,8 +52,6 @@ def create_api_key():
         key=APIKey.generate_key(),
         name=name
     )
-    db.session.add(api_key)
-    db.session.commit()
     
     flash(f'API key created successfully: {api_key.key}', 'success')
     flash('Make sure to copy your API key now. You will not be able to see it again!', 'warning')
@@ -63,14 +61,13 @@ def create_api_key():
 @login_required
 def delete_api_key(key_id):
     """Delete an API key"""
-    api_key = APIKey.query.filter_by(id=key_id, user_id=current_user.id).first()
+    api_key = APIKey.query_by_id(key_id)
     
-    if not api_key:
+    if not api_key or api_key.user_id != current_user.id:
         flash('API key not found', 'error')
         return redirect(url_for('developer.portal'))
     
-    db.session.delete(api_key)
-    db.session.commit()
+    APIKey.delete(key_id)
     
     flash('API key deleted successfully', 'success')
     return redirect(url_for('developer.portal'))
@@ -79,14 +76,13 @@ def delete_api_key(key_id):
 @login_required
 def toggle_api_key(key_id):
     """Toggle API key active status"""
-    api_key = APIKey.query.filter_by(id=key_id, user_id=current_user.id).first()
+    api_key = APIKey.query_by_id(key_id)
     
-    if not api_key:
+    if not api_key or api_key.user_id != current_user.id:
         flash('API key not found', 'error')
         return redirect(url_for('developer.portal'))
     
     api_key.is_active = not api_key.is_active
-    db.session.commit()
     
     status = 'activated' if api_key.is_active else 'deactivated'
     flash(f'API key {status} successfully', 'success')
@@ -101,20 +97,10 @@ def usage():
     start_date = datetime.utcnow() - timedelta(days=days)
     
     # Get usage data
-    usage_data = APIUsage.query.filter(
-        APIUsage.user_id == current_user.id,
-        APIUsage.timestamp >= start_date
-    ).order_by(APIUsage.timestamp.desc()).limit(1000).all()
+    usage_data = APIUsage.query_by_user_id(current_user.id, start_date=start_date, limit=1000)
     
     # Group by endpoint
-    endpoint_stats = db.session.query(
-        APIUsage.endpoint,
-        func.count(APIUsage.id).label('count'),
-        func.avg(APIUsage.response_time).label('avg_response_time')
-    ).filter(
-        APIUsage.user_id == current_user.id,
-        APIUsage.timestamp >= start_date
-    ).group_by(APIUsage.endpoint).all()
+    endpoint_stats = APIUsage.get_endpoint_stats(current_user.id, start_date)
     
     return render_template('developer/usage.html',
                          usage_data=usage_data,

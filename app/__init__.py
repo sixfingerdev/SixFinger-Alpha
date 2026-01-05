@@ -5,7 +5,7 @@ from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import config
-from app.models import db, User
+from app.models import User
 
 bcrypt = Bcrypt()
 mail = Mail()
@@ -21,7 +21,6 @@ def create_app(config_name='default'):
     app.config.from_object(config[config_name])
     
     # Initialize extensions
-    db.init_app(app)
     bcrypt.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
@@ -34,7 +33,7 @@ def create_app(config_name='default'):
     
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return User.query_by_id(int(user_id))
     
     # Register blueprints
     from app.blueprints.auth import auth_bp
@@ -59,9 +58,5 @@ def create_app(config_name='default'):
         response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         return response
-    
-    # Create database tables
-    with app.app_context():
-        db.create_all()
     
     return app
