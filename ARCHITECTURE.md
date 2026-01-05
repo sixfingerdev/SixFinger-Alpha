@@ -132,23 +132,23 @@ User → Agent → Task Parser → Enhanced Prompt → API →
 
 ## Key Features
 
-### 🎯 Task Classification
+### [TASK] Task Classification
 - Automatically determines task type
 - Routes to appropriate execution mode
 - Enhances prompts for better results
 
-### 🌊 Streaming Output
+###  Streaming Output
 - Real-time response display
 - No waiting for complete response
 - Better user experience
 
-### 🔧 Flexible API
+###  Flexible API
 - Command-line interface
 - Interactive mode
 - Programmatic usage
 - Compact version for power users
 
-### 🛡️ Error Handling
+### ️ Error Handling
 - Network error recovery
 - API error handling
 - Graceful degradation
