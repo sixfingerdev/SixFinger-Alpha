@@ -45,3 +45,18 @@ htmlcov/
 tmp/
 *.tmp
 *.log
+
+# Flask
+instance/
+.webassets-cache
+*.db
+*.sqlite
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite3

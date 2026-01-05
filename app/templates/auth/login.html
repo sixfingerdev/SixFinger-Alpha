@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Login - SixFinger{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h1>Login</h1>
+        <p class="auth-subtitle">Welcome back to SixFinger</p>
+        
+        <form method="POST" action="{{ url_for('auth.login') }}" class="auth-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="remember" value="true">
+                    Remember me
+                </label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">Login</button>
+        </form>
+        
+        <div class="auth-links">
+            <a href="{{ url_for('auth.forgot_password') }}">Forgot password?</a>
+            <span>|</span>
+            <a href="{{ url_for('auth.signup') }}">Create an account</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

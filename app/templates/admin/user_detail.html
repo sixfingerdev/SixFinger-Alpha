@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}User Details - Admin - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>User Details: {{ user.username }}</h1>
+        
+        <div class="user-details-grid">
+            <div class="detail-card">
+                <h2>Account Information</h2>
+                <table class="info-table">
+                    <tr>
+                        <th>User ID:</th>
+                        <td>{{ user.id }}</td>
+                    </tr>
+                    <tr>
+                        <th>Username:</th>
+                        <td>{{ user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-error">Inactive</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Email Verified:</th>
+                        <td>
+                            {% if user.email_verified %}
+                                <span class="badge badge-success">Yes</span>
+                            {% else %}
+                                <span class="badge badge-warning">No</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Admin:</th>
+                        <td>
+                            {% if user.is_admin %}
+                                <span class="badge badge-info">Yes</span>
+                            {% else %}
+                                No
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Joined:</th>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    <tr>
+                        <th>Last Login:</th>
+                        <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M:%S') if user.last_login else 'Never' }}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="detail-card">
+                <h2>Subscription</h2>
+                {% if user.subscription %}
+                    <p><strong>Plan:</strong> {{ user.subscription.plan|upper }}</p>
+                    <p><strong>Active:</strong> {{ 'Yes' if user.subscription.is_active else 'No' }}</p>
+                    {% if user.subscription.current_period_end %}
+                        <p><strong>Period End:</strong> {{ user.subscription.current_period_end.strftime('%Y-%m-%d') }}</p>
+                    {% endif %}
+                    
+                    <form method="POST" action="{{ url_for('admin.change_user_plan', user_id=user.id) }}" style="margin-top: 1rem;">
+                        <label for="plan">Change Plan:</label>
+                        <select name="plan" id="plan">
+                            <option value="free" {% if user.subscription.plan == 'free' %}selected{% endif %}>Free</option>
+                            <option value="starter" {% if user.subscription.plan == 'starter' %}selected{% endif %}>Starter</option>
+                            <option value="pro" {% if user.subscription.plan == 'pro' %}selected{% endif %}>Pro</option>
+                            <option value="enterprise" {% if user.subscription.plan == 'enterprise' %}selected{% endif %}>Enterprise</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-small">Update</button>
+                    </form>
+                {% else %}
+                    <p>No subscription</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="detail-card">
+            <h2>API Usage</h2>
+            <p><strong>Monthly Requests:</strong> {{ monthly_usage }}</p>
+            <p><strong>Active API Keys:</strong> {{ api_keys|length }}</p>
+        </div>
+        
+        <div class="detail-card">
+            <h2>API Keys</h2>
+            {% if api_keys %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Last Used</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key in api_keys %}
+                        <tr>
+                            <td>{{ key.name }}</td>
+                            <td>
+                                {% if key.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-error">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ key.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ key.last_used.strftime('%Y-%m-%d %H:%M') if key.last_used else 'Never' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No API keys</p>
+            {% endif %}
+        </div>
+        
+        <div class="admin-actions">
+            <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">
+                    {% if user.is_active %}Deactivate{% else %}Activate{% endif %} User
+                </button>
+            </form>
+            
+            <form method="POST" action="{{ url_for('admin.toggle_user_admin', user_id=user.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">
+                    {% if user.is_admin %}Revoke{% else %}Grant{% endif %} Admin
+                </button>
+            </form>
+            
+            <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Back to Users</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.user-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.info-table {
+    width: 100%;
+}
+
+.info-table tr {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.info-table th {
+    text-align: left;
+    padding: 0.75rem 1rem 0.75rem 0;
+    font-weight: 600;
+    width: 150px;
+}
+
+.info-table td {
+    padding: 0.75rem 0;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+</style>
+{% endblock %}

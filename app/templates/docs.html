@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+
+{% block title %}API Documentation - SixFinger{% endblock %}
+
+{% block content %}
+<div class="docs-container">
+    <div class="container">
+        <h1>API Documentation</h1>
+        <p class="subtitle">Complete guide to integrating SixFinger API</p>
+        
+        <div class="docs-content">
+            <section class="doc-section">
+                <h2>Getting Started</h2>
+                <p>Welcome to the SixFinger API documentation. This API provides powerful AI capabilities for research, code generation, analysis, and more.</p>
+                
+                <h3>Authentication</h3>
+                <p>All API requests require authentication using an API key. Include your API key in the request header:</p>
+                <pre><code>X-API-Key: your_api_key_here</code></pre>
+                <p>Alternatively, you can pass it as a query parameter:</p>
+                <pre><code>?api_key=your_api_key_here</code></pre>
+            </section>
+            
+            <section class="doc-section">
+                <h2>Base URL</h2>
+                <pre><code>https://sixfinger.dev/api/v1</code></pre>
+            </section>
+            
+            <section class="doc-section">
+                <h2>Endpoints</h2>
+                
+                <div class="endpoint">
+                    <h3>POST /query</h3>
+                    <p>Send a general query to the AI.</p>
+                    
+                    <h4>Request Body</h4>
+                    <pre><code>{
+    "prompt": "Your question or task here",
+    "stream": false
+}</code></pre>
+                    
+                    <h4>Response</h4>
+                    <pre><code>{
+    "success": true,
+    "response": "AI generated response",
+    "usage": {
+        "user": "username",
+        "plan": "free",
+        "response_time": 0.5
+    }
+}</code></pre>
+                    
+                    <h4>Example</h4>
+                    <pre><code>curl -X POST https://sixfinger.dev/api/v1/query \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain quantum computing"}'</code></pre>
+                </div>
+                
+                <div class="endpoint">
+                    <h3>POST /research</h3>
+                    <p>Conduct comprehensive research on a topic.</p>
+                    
+                    <h4>Request Body</h4>
+                    <pre><code>{
+    "topic": "Topic to research"
+}</code></pre>
+                    
+                    <h4>Example</h4>
+                    <pre><code>curl -X POST https://sixfinger.dev/api/v1/research \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"topic": "Latest AI developments"}'</code></pre>
+                </div>
+                
+                <div class="endpoint">
+                    <h3>POST /code</h3>
+                    <p>Generate code based on requirements.</p>
+                    
+                    <h4>Request Body</h4>
+                    <pre><code>{
+    "requirements": "Code requirements description"
+}</code></pre>
+                    
+                    <h4>Example</h4>
+                    <pre><code>curl -X POST https://sixfinger.dev/api/v1/code \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"requirements": "Create a Python function to sort a list"}'</code></pre>
+                </div>
+                
+                <div class="endpoint">
+                    <h3>POST /analyze</h3>
+                    <p>Analyze provided content.</p>
+                    
+                    <h4>Request Body</h4>
+                    <pre><code>{
+    "content": "Content to analyze"
+}</code></pre>
+                </div>
+                
+                <div class="endpoint">
+                    <h3>GET /usage</h3>
+                    <p>Get your API usage statistics.</p>
+                    
+                    <h4>Response</h4>
+                    <pre><code>{
+    "user": "username",
+    "plan": "pro",
+    "usage": {
+        "daily": 50,
+        "monthly": 1500
+    },
+    "limits": {
+        "daily": 10000,
+        "monthly": 250000
+    },
+    "remaining": {
+        "daily": 9950,
+        "monthly": 248500
+    }
+}</code></pre>
+                </div>
+            </section>
+            
+            <section class="doc-section">
+                <h2>Rate Limits</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Plan</th>
+                            <th>Daily Limit</th>
+                            <th>Monthly Limit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Free</td>
+                            <td>100</td>
+                            <td>1,000</td>
+                        </tr>
+                        <tr>
+                            <td>Starter</td>
+                            <td>1,000</td>
+                            <td>25,000</td>
+                        </tr>
+                        <tr>
+                            <td>Pro</td>
+                            <td>10,000</td>
+                            <td>250,000</td>
+                        </tr>
+                        <tr>
+                            <td>Enterprise</td>
+                            <td>Unlimited</td>
+                            <td>Unlimited</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+            
+            <section class="doc-section">
+                <h2>Error Codes</h2>
+                <ul>
+                    <li><strong>401 Unauthorized</strong> - Invalid or missing API key</li>
+                    <li><strong>403 Forbidden</strong> - Account inactive or insufficient permissions</li>
+                    <li><strong>429 Too Many Requests</strong> - Rate limit exceeded</li>
+                    <li><strong>400 Bad Request</strong> - Invalid request parameters</li>
+                    <li><strong>500 Internal Server Error</strong> - Server error</li>
+                </ul>
+            </section>
+            
+            <section class="doc-section">
+                <h2>Support</h2>
+                <p>Need help? Contact us at <a href="mailto:support@sixfinger.dev">support@sixfinger.dev</a></p>
+            </section>
+        </div>
+    </div>
+</div>
+
+<style>
+.docs-container {
+    padding: 3rem 0;
+}
+
+.docs-content {
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.doc-section {
+    margin-bottom: 3rem;
+}
+
+.doc-section h2 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.doc-section h3 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.doc-section h4 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.endpoint {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+pre {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.doc-section ul {
+    list-style-position: inside;
+    margin: 1rem 0;
+}
+
+.doc-section ul li {
+    padding: 0.5rem 0;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}API Usage - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>API Usage Statistics</h1>
+        <p class="subtitle">View your API usage over the last {{ days }} days</p>
+        
+        <div class="filter-options">
+            <a href="{{ url_for('developer.usage', days=7) }}" class="btn btn-small {% if days == 7 %}btn-primary{% endif %}">7 Days</a>
+            <a href="{{ url_for('developer.usage', days=30) }}" class="btn btn-small {% if days == 30 %}btn-primary{% endif %}">30 Days</a>
+            <a href="{{ url_for('developer.usage', days=90) }}" class="btn btn-small {% if days == 90 %}btn-primary{% endif %}">90 Days</a>
+        </div>
+        
+        <div class="usage-section">
+            <h2>Endpoint Statistics</h2>
+            {% if endpoint_stats %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Endpoint</th>
+                            <th>Total Requests</th>
+                            <th>Avg Response Time (s)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for endpoint, count, avg_time in endpoint_stats %}
+                        <tr>
+                            <td><code>{{ endpoint or 'N/A' }}</code></td>
+                            <td>{{ count }}</td>
+                            <td>{{ "%.3f"|format(avg_time or 0) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No usage data available for this period.</p>
+            {% endif %}
+        </div>
+        
+        <div class="usage-section">
+            <h2>Recent Requests</h2>
+            {% if usage_data %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Endpoint</th>
+                            <th>Method</th>
+                            <th>Status</th>
+                            <th>Response Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usage in usage_data[:50] %}
+                        <tr>
+                            <td>{{ usage.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td><code>{{ usage.endpoint or 'N/A' }}</code></td>
+                            <td>{{ usage.method }}</td>
+                            <td>
+                                {% if usage.status_code < 300 %}
+                                    <span class="badge badge-success">{{ usage.status_code }}</span>
+                                {% elif usage.status_code < 400 %}
+                                    <span class="badge badge-info">{{ usage.status_code }}</span>
+                                {% else %}
+                                    <span class="badge badge-error">{{ usage.status_code }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ "%.3f"|format(usage.response_time or 0) }}s</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No usage data available.</p>
+            {% endif %}
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('developer.portal') }}" class="btn btn-secondary">Back to Developer Portal</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.filter-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.usage-section {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.usage-section h2 {
+    margin-bottom: 1rem;
+}
+
+.badge-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+</style>
+{% endblock %}

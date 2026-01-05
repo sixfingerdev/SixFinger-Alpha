@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Choose Plan - SixFinger{% endblock %}
+
+{% block content %}
+<div class="pricing-container">
+    <div class="container">
+        <h1>Choose Your Plan</h1>
+        <p class="section-subtitle">Select the perfect plan for your needs</p>
+        
+        <div class="currency-selector">
+            <a href="?currency=USD" class="{% if currency == 'USD' %}active{% endif %}">USD ($)</a>
+            <a href="?currency=TRY" class="{% if currency == 'TRY' %}active{% endif %}">TRY (₺)</a>
+        </div>
+        
+        <div class="pricing-grid">
+            {% for plan_key, plan in plans.items() %}
+            <div class="pricing-card {% if plan_key == 'pro' %}featured{% endif %}">
+                {% if plan_key == 'pro' %}
+                <div class="featured-badge">Most Popular</div>
+                {% endif %}
+                
+                <h3>{{ plan.name }}</h3>
+                
+                <div class="price">
+                    {% if currency == 'USD' %}
+                        <span class="currency">$</span>
+                        <span class="amount">{{ plan.price_usd }}</span>
+                    {% else %}
+                        <span class="amount">{{ plan.price_try }}</span>
+                        <span class="currency">₺</span>
+                    {% endif %}
+                    <span class="period">/month</span>
+                </div>
+                
+                <ul class="features-list">
+                    {% for feature in plan.features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                
+                {% if current_plan == plan_key %}
+                    <button class="btn btn-block btn-secondary" disabled>Current Plan</button>
+                {% elif plan.price_usd == 0 %}
+                    <button class="btn btn-block btn-secondary" disabled>Free Plan</button>
+                {% else %}
+                    <form method="POST" action="{{ url_for('subscription.create_checkout_session') }}">
+                        <input type="hidden" name="plan" value="{{ plan_key }}">
+                        <input type="hidden" name="currency" value="{{ currency }}">
+                        <button type="submit" class="btn btn-block {% if plan_key == 'pro' %}btn-primary{% else %}btn-secondary{% endif %}">
+                            Subscribe Now
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

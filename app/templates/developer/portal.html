@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Developer Portal - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>Developer Portal</h1>
+        <p class="subtitle">Manage your API keys and monitor usage</p>
+        
+        <div class="action-card" style="margin-bottom: 2rem;">
+            <h3>Create New API Key</h3>
+            <form method="POST" action="{{ url_for('developer.create_api_key') }}" style="display: flex; gap: 1rem; align-items: end;">
+                <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                    <label for="name">Key Name</label>
+                    <input type="text" id="name" name="name" required placeholder="e.g., Production API Key">
+                </div>
+                <button type="submit" class="btn btn-primary">Create Key</button>
+            </form>
+        </div>
+        
+        <div class="api-keys-section">
+            <h2>Your API Keys</h2>
+            {% if api_keys %}
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Key</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Last Used</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for key in api_keys %}
+                            <tr>
+                                <td>{{ key.name }}</td>
+                                <td>
+                                    <code>{{ key.key[:20] }}...</code>
+                                    <button onclick="copyToClipboard('{{ key.key }}')" class="btn-copy">Copy</button>
+                                </td>
+                                <td>
+                                    {% if key.is_active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-error">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ key.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ key.last_used.strftime('%Y-%m-%d %H:%M') if key.last_used else 'Never' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('developer.toggle_api_key', key_id=key.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn-small">
+                                            {% if key.is_active %}Disable{% else %}Enable{% endif %}
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('developer.delete_api_key', key_id=key.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure?')">
+                                        <button type="submit" class="btn-small btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p>You haven't created any API keys yet.</p>
+            {% endif %}
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('developer.usage') }}" class="btn btn-secondary">View Detailed Usage</a>
+            <a href="{{ url_for('main.documentation') }}" class="btn btn-secondary">API Documentation</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--card-bg);
+    margin-top: 1rem;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table th {
+    background-color: var(--bg-color);
+    font-weight: 600;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.badge-success {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.btn-small {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
+    background-color: white;
+    border-radius: 0.375rem;
+    cursor: pointer;
+}
+
+.btn-danger {
+    color: var(--error-color);
+    border-color: var(--error-color);
+}
+
+.btn-copy {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %}

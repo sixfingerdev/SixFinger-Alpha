@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}SixFinger - Advanced AI API Platform{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <div class="hero-content">
+            <h1>Advanced AI API Platform</h1>
+            <p class="hero-subtitle">Powerful AI capabilities at your fingertips. Research, code generation, analysis, and more.</p>
+            <div class="hero-buttons">
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-large">Get Started Free</a>
+                <a href="{{ url_for('main.documentation') }}" class="btn btn-secondary btn-large">View Documentation</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="container">
+        <h2>Why Choose SixFinger?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Web Research</h3>
+                <p>Comprehensive research capabilities powered by advanced AI</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💻</div>
+                <h3>Code Generation</h3>
+                <p>Generate high-quality code in multiple programming languages</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Analysis</h3>
+                <p>Deep analysis of data, text, and concepts</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Fast & Reliable</h3>
+                <p>High-performance API with 99.9% uptime</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Secure</h3>
+                <p>Enterprise-grade security and data protection</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>Scalable</h3>
+                <p>From startup to enterprise, we scale with you</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="pricing-preview">
+    <div class="container">
+        <h2>Simple, Transparent Pricing</h2>
+        <p class="section-subtitle">Choose the plan that fits your needs</p>
+        <div class="pricing-grid">
+            {% for plan_key, plan in plans.items() %}
+            <div class="pricing-card {% if plan_key == 'pro' %}featured{% endif %}">
+                {% if plan_key == 'pro' %}
+                <div class="featured-badge">Most Popular</div>
+                {% endif %}
+                <h3>{{ plan.name }}</h3>
+                <div class="price">
+                    <span class="currency">$</span>
+                    <span class="amount">{{ plan.price_usd }}</span>
+                    <span class="period">/month</span>
+                </div>
+                <ul class="features-list">
+                    {% for feature in plan.features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('auth.signup') }}" class="btn btn-block {% if plan_key == 'pro' %}btn-primary{% else %}btn-secondary{% endif %}">
+                    {% if plan.price_usd == 0 %}Get Started{% else %}Subscribe Now{% endif %}
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        <p class="pricing-note">All prices shown in USD. TRY pricing also available (1$ = 47₺)</p>
+    </div>
+</section>
+
+<section class="cta">
+    <div class="container">
+        <h2>Ready to Get Started?</h2>
+        <p>Join thousands of developers using SixFinger API</p>
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-large">Start Building Today</a>
+    </div>
+</section>
+{% endblock %}

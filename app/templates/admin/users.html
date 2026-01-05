@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Users - Admin - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>User Management</h1>
+        
+        <div class="search-section">
+            <form method="GET" action="{{ url_for('admin.users') }}">
+                <div class="search-box">
+                    <input type="text" name="search" value="{{ search }}" placeholder="Search users...">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </form>
+        </div>
+        
+        <div class="table-section">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Plan</th>
+                        <th>Status</th>
+                        <th>Verified</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.get_plan()|upper }}</td>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="badge badge-success">Active</span>
+                            {% else %}
+                                <span class="badge badge-error">Inactive</span>
+                            {% endif %}
+                            {% if user.is_admin %}
+                                <span class="badge badge-info">Admin</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.email_verified %}
+                                <span class="badge badge-success">Yes</span>
+                            {% else %}
+                                <span class="badge badge-warning">No</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn-small">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if pagination.pages > 1 %}
+        <div class="pagination">
+            {% if pagination.has_prev %}
+                <a href="{{ url_for('admin.users', page=pagination.prev_num, search=search) }}" class="btn btn-small">Previous</a>
+            {% endif %}
+            
+            <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
+            
+            {% if pagination.has_next %}
+                <a href="{{ url_for('admin.users', page=pagination.next_num, search=search) }}" class="btn btn-small">Next</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.search-section {
+    margin-bottom: 2rem;
+}
+
+.search-box {
+    display: flex;
+    gap: 1rem;
+    max-width: 600px;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+}
+
+.table-section {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+</style>
+{% endblock %}

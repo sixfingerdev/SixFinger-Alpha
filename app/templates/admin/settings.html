@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Admin - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>Admin Settings</h1>
+        
+        <div class="settings-section">
+            <h2>System Information</h2>
+            <table class="info-table">
+                <tr>
+                    <th>Application Name:</th>
+                    <td>SixFinger Alpha</td>
+                </tr>
+                <tr>
+                    <th>Version:</th>
+                    <td>1.0.0</td>
+                </tr>
+                <tr>
+                    <th>Environment:</th>
+                    <td>{{ config.get('FLASK_ENV', 'production') }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="settings-section">
+            <h2>Configuration</h2>
+            <p>System configuration is managed through environment variables.</p>
+            <p>See <code>.env.example</code> for available settings.</p>
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-section {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.settings-section h2 {
+    margin-bottom: 1rem;
+}
+</style>
+{% endblock %}
