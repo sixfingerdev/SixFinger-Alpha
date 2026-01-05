@@ -148,30 +148,30 @@ elif mode == 'code':
 
 ## Accessibility
 
-- ✅ Keyboard navigation support
-- ✅ High contrast colors (WCAG AA)
-- ✅ Clear focus indicators
-- ✅ Responsive for mobile/tablet/desktop
-- ✅ Screen reader friendly labels
-- ✅ Error messages clearly displayed
+- [] Keyboard navigation support
+- [] High contrast colors (WCAG AA)
+- [] Clear focus indicators
+- [] Responsive for mobile/tablet/desktop
+- [] Screen reader friendly labels
+- [] Error messages clearly displayed
 
 ## Performance
 
-- ✅ Lazy loading of responses
-- ✅ Async API calls
-- ✅ Debounced input validation
-- ✅ Optimized CSS animations
-- ✅ Minimal JavaScript bundle
-- ✅ Fast initial page load
+- [] Lazy loading of responses
+- [] Async API calls
+- [] Debounced input validation
+- [] Optimized CSS animations
+- [] Minimal JavaScript bundle
+- [] Fast initial page load
 
 ## Security
 
-- ✅ Login required decorator
-- ✅ CSRF protection
-- ✅ Rate limiting per user
-- ✅ Input sanitization
-- ✅ Secure API communication
-- ✅ No client-side API keys
+- [] Login required decorator
+- [] CSRF protection
+- [] Rate limiting per user
+- [] Input sanitization
+- [] Secure API communication
+- [] No client-side API keys
 
 ## Future Enhancements
 
