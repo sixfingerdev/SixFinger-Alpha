@@ -47,10 +47,16 @@
         </div>
         
         <div class="dashboard-actions">
+            <div class="action-card" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); border: 2px solid var(--primary-color);">
+                <h3>AI Playground - NEW!</h3>
+                <p>Try our new interactive AI interface with multiple modes: Research, Code Generation, Article Writing, Web Search, and more!</p>
+                <a href="{{ url_for('main.playground') }}" class="btn btn-primary">Launch Playground</a>
+            </div>
+            
             <div class="action-card">
                 <h3>Developer Portal</h3>
                 <p>Manage your API keys, view usage statistics, and access documentation</p>
-                <a href="{{ url_for('developer.portal') }}" class="btn btn-primary">Go to Developer Portal</a>
+                <a href="{{ url_for('developer.portal') }}" class="btn btn-secondary">Go to Developer Portal</a>
             </div>
             
             <div class="action-card">

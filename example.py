@@ -13,7 +13,7 @@ def demo_compact_version():
     This is the minimal code to interact with DeepSeek API.
     """
     print("=" * 60)
-    print("📦 COMPACT VERSION (Original Code)")
+    print("COMPACT VERSION (Original Code)")
     print("=" * 60)
     print()
     
@@ -49,7 +49,7 @@ def demo_autonomous_agent():
     Demonstrates the full autonomous agent with enhanced capabilities.
     """
     print("=" * 60)
-    print("🤖 AUTONOMOUS AGENT VERSION")
+    print("AUTONOMOUS AGENT VERSION")
     print("=" * 60)
     print()
     
@@ -73,7 +73,7 @@ def demo_autonomous_agent():
     
     if choice.isdigit() and 1 <= int(choice) <= len(examples):
         category, task = examples[int(choice) - 1]
-        print(f"\n✨ Executing: {task}\n")
+        print(f"\n[EXECUTING] {task}\n")
         agent.parse_and_execute(task)
     else:
         task = input("Enter your custom task: ")
@@ -83,7 +83,7 @@ def demo_autonomous_agent():
 def main():
     """Main interactive menu."""
     print("\n" + "=" * 60)
-    print("🚀 SixFinger Autonomous AI Agent - Interactive Demo")
+    print("SixFinger Autonomous AI Agent - Interactive Demo")
     print("=" * 60)
     print()
     print("Choose a demo mode:")

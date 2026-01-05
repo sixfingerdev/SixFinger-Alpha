@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}AI Playground - SixFinger{% endblock %}
+
+{% block extra_css %}
+<style>
+    .playground-container {
+        min-height: calc(100vh - 200px);
+        padding: 2rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .playground-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    .playground-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 2rem;
+    }
+    
+    .playground-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+    
+    .playground-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .playground-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .mode-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .mode-btn {
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        font-weight: 600;
+        color: #4a5568;
+    }
+    
+    .mode-btn:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+    
+    .mode-btn.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-color: transparent;
+    }
+    
+    .input-area {
+        margin-bottom: 1.5rem;
+    }
+    
+    .input-area label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .input-area textarea {
+        width: 100%;
+        min-height: 120px;
+        padding: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: inherit;
+        resize: vertical;
+        transition: all 0.3s ease;
+    }
+    
+    .input-area textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .submit-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .response-area {
+        margin-top: 2rem;
+        padding: 2rem;
+        background: #f7fafc;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        display: none;
+    }
+    
+    .response-area.show {
+        display: block;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .response-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .response-header h3 {
+        margin: 0;
+        color: #2d3748;
+    }
+    
+    .response-meta {
+        font-size: 0.9rem;
+        color: #718096;
+    }
+    
+    .response-content {
+        color: #2d3748;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 2rem;
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .loading::after {
+        content: '...';
+        animation: dots 1.5s steps(4, end) infinite;
+    }
+    
+    @keyframes dots {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60%, 100% { content: '...'; }
+    }
+    
+    .error-message {
+        background: #fed7d7;
+        color: #c53030;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+    
+    .copy-btn {
+        background: #48bb78;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+    
+    .copy-btn:hover {
+        background: #38a169;
+        transform: scale(1.05);
+    }
+    
+    .examples {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: #edf2f7;
+        border-radius: 12px;
+    }
+    
+    .examples h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #2d3748;
+    }
+    
+    .example-item {
+        padding: 0.75rem;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .example-item:hover {
+        border-color: #667eea;
+        transform: translateX(5px);
+    }
+    
+    .example-item strong {
+        color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="playground-container">
+    <div class="playground-content">
+        <div class="playground-header">
+            <h1>AI Playground</h1>
+            <p>Interact with advanced AI capabilities - Research, Code, Write, and More</p>
+        </div>
+        
+        <div class="playground-card">
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="general">
+                    General Query
+                </button>
+                <button class="mode-btn" data-mode="research">
+                    Research
+                </button>
+                <button class="mode-btn" data-mode="code">
+                    Code Generation
+                </button>
+                <button class="mode-btn" data-mode="article">
+                    Article Writing
+                </button>
+                <button class="mode-btn" data-mode="websearch">
+                    Web Search
+                </button>
+                <button class="mode-btn" data-mode="agent">
+                    Autonomous Agent
+                </button>
+            </div>
+            
+            <form id="playgroundForm">
+                <div class="input-area">
+                    <label for="prompt">Your Prompt</label>
+                    <textarea 
+                        id="prompt" 
+                        name="prompt" 
+                        placeholder="Enter your query, task, or question here..."
+                        required
+                    ></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    Generate Response
+                </button>
+            </form>
+            
+            <div id="responseArea" class="response-area">
+                <div class="response-header">
+                    <h3>Response</h3>
+                    <div>
+                        <span class="response-meta" id="responseMeta"></span>
+                        <button class="copy-btn" onclick="copyResponse()">Copy</button>
+                    </div>
+                </div>
+                <div class="response-content" id="responseContent"></div>
+            </div>
+            
+            <div class="examples">
+                <h3>Example Prompts</h3>
+                <div class="example-item" onclick="setExample('Explain how machine learning works', 'general')">
+                    <strong>General:</strong> Explain how machine learning works
+                </div>
+                <div class="example-item" onclick="setExample('Latest developments in quantum computing', 'research')">
+                    <strong>Research:</strong> Latest developments in quantum computing
+                </div>
+                <div class="example-item" onclick="setExample('Create a Python REST API with Flask', 'code')">
+                    <strong>Code:</strong> Create a Python REST API with Flask
+                </div>
+                <div class="example-item" onclick="setExample('The future of artificial intelligence', 'article')">
+                    <strong>Article:</strong> The future of artificial intelligence
+                </div>
+                <div class="example-item" onclick="setExample('Best practices for web security', 'websearch')">
+                    <strong>Web Search:</strong> Best practices for web security
+                </div>
+                <div class="example-item" onclick="setExample('Analyze and compare different database technologies', 'agent')">
+                    <strong>Agent:</strong> Analyze and compare different database technologies
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentMode = 'general';
+    
+    // Mode selection
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentMode = this.dataset.mode;
+        });
+    });
+    
+    // Form submission
+    document.getElementById('playgroundForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const prompt = document.getElementById('prompt').value;
+        const submitBtn = document.getElementById('submitBtn');
+        const responseArea = document.getElementById('responseArea');
+        const responseContent = document.getElementById('responseContent');
+        const responseMeta = document.getElementById('responseMeta');
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Generating...';
+        responseArea.classList.add('show');
+        responseContent.innerHTML = '<div class="loading">Processing your request</div>';
+        
+        try {
+            const response = await fetch('/playground/query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    prompt: prompt,
+                    mode: currentMode
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                responseContent.textContent = data.response;
+                responseMeta.textContent = `Mode: ${data.mode} | Response time: ${data.response_time}s`;
+            } else {
+                responseContent.innerHTML = `<div class="error-message">${data.error}</div>`;
+            }
+        } catch (error) {
+            responseContent.innerHTML = `<div class="error-message">An error occurred: ${error.message}</div>`;
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Generate Response';
+        }
+    });
+    
+    function setExample(text, mode) {
+        document.getElementById('prompt').value = text;
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.mode === mode) {
+                btn.classList.add('active');
+                currentMode = mode;
+            }
+        });
+    }
+    
+    function copyResponse() {
+        const content = document.getElementById('responseContent').textContent;
+        navigator.clipboard.writeText(content).then(() => {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        });
+    }
+</script>
+{% endblock %}

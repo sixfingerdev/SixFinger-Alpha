@@ -174,7 +174,7 @@ class TestCompactVersion(unittest.TestCase):
 def run_tests():
     """Run all tests."""
     print("=" * 60)
-    print("🧪 Running Tests for Autonomous Agent")
+    print(" Running Tests for Autonomous Agent")
     print("=" * 60)
     print()
     
@@ -193,9 +193,9 @@ def run_tests():
     # Summary
     print("\n" + "=" * 60)
     if result.wasSuccessful():
-        print("✅ All tests passed!")
+        print("[COMPLETE] All tests passed!")
     else:
-        print("❌ Some tests failed.")
+        print(" Some tests failed.")
     print("=" * 60)
     
     return 0 if result.wasSuccessful() else 1
