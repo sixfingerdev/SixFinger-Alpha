@@ -36,8 +36,9 @@ def demo_compact_version():
         if l and (c := l.decode()[6:]) != "[DONE]":
             try:
                 print(json.loads(c)['choices'][0]['delta']['content'], end='')
-            except:
-                0
+            except (json.JSONDecodeError, KeyError, IndexError):
+                # Ignore malformed streaming chunks (matches original compact code behavior)
+                pass
     print("\n")
 
 

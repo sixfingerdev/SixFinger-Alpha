@@ -55,8 +55,11 @@ class AutonomousAgent:
             else:
                 return response.json()['choices'][0]['message']['content']
                 
-        except Exception as e:
+        except (r.RequestException, ValueError, KeyError) as e:
             print(f"\nError querying AI: {e}", file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f"\nUnexpected error: {e}", file=sys.stderr)
             return None
     
     def _handle_stream(self, response) -> str:
@@ -80,6 +83,7 @@ class AutonomousAgent:
                         print(content, end='', flush=True)
                         full_response.append(content)
                 except (json.JSONDecodeError, KeyError, IndexError):
+                    # Ignore malformed chunks or incomplete data during streaming
                     pass
         
         print()  # New line after streaming

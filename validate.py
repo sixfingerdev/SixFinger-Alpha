@@ -35,7 +35,9 @@ for l in r.post("https://api.deepinfra.com/v1/openai/chat/completions",headers={
     
     # Check walrus operator (Python 3.8+)
     try:
-        exec("if (x := 5) > 0: pass")
+        # Validate walrus operator syntax without executing code
+        walrus_test = "if (x := 5) > 0: pass"
+        ast.parse(walrus_test)
         print("✅ Walrus operator support: PASSED")
     except SyntaxError:
         print("❌ Walrus operator support: FAILED (requires Python 3.8+)")
