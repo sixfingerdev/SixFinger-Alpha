@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Subscription - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>Manage Subscription</h1>
+        
+        <div class="subscription-details">
+            <div class="detail-card">
+                <h2>Current Plan</h2>
+                {% if subscription %}
+                    <div class="plan-info">
+                        <h3>{{ plans[subscription.plan].name }}</h3>
+                        <p class="plan-price">
+                            {% if subscription.currency == 'USD' %}
+                                ${{ plans[subscription.plan].price_usd }}/month
+                            {% else %}
+                                {{ plans[subscription.plan].price_try }}₺/month
+                            {% endif %}
+                        </p>
+                        
+                        {% if subscription.is_active and subscription.current_period_end %}
+                            <p>
+                                <strong>Status:</strong> 
+                                {% if subscription.cancel_at_period_end %}
+                                    <span class="badge badge-warning">Cancelling</span>
+                                {% else %}
+                                    <span class="badge badge-success">Active</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>Next billing date:</strong> {{ subscription.current_period_end.strftime('%B %d, %Y') }}</p>
+                            
+                            {% if subscription.cancel_at_period_end %}
+                                <p class="warning-text">Your subscription will end on {{ subscription.current_period_end.strftime('%B %d, %Y') }}</p>
+                            {% endif %}
+                        {% else %}
+                            <p><strong>Status:</strong> <span class="badge badge-success">Active</span></p>
+                        {% endif %}
+                        
+                        <div class="plan-features">
+                            <h4>Plan Features:</h4>
+                            <ul>
+                                {% for feature in plans[subscription.plan].features %}
+                                <li>{{ feature }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <p>No active subscription</p>
+                {% endif %}
+            </div>
+            
+            <div class="detail-card">
+                <h2>Actions</h2>
+                
+                {% if subscription and subscription.plan != 'free' %}
+                    {% if not subscription.cancel_at_period_end %}
+                        <form method="POST" action="{{ url_for('subscription.cancel') }}" onsubmit="return confirm('Are you sure you want to cancel your subscription?')">
+                            <button type="submit" class="btn btn-secondary">Cancel Subscription</button>
+                        </form>
+                        <p class="help-text">You can cancel anytime. Your subscription will remain active until the end of the billing period.</p>
+                    {% endif %}
+                {% endif %}
+                
+                <a href="{{ url_for('subscription.plans') }}" class="btn btn-primary">Change Plan</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.subscription-details {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.detail-card {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.detail-card h2 {
+    margin-bottom: 1.5rem;
+}
+
+.plan-info h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.plan-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.plan-info p {
+    margin-bottom: 0.5rem;
+}
+
+.plan-features {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.plan-features h4 {
+    margin-bottom: 0.5rem;
+}
+
+.plan-features ul {
+    list-style-position: inside;
+}
+
+.plan-features li {
+    padding: 0.25rem 0;
+}
+
+.help-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+.warning-text {
+    color: var(--warning-color);
+    font-weight: 500;
+}
+
+.badge-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+@media (max-width: 768px) {
+    .subscription-details {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

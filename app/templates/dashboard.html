@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Welcome back, {{ current_user.username }}!</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Current Plan</h3>
+                <div class="stat-value">{{ plan|upper }}</div>
+                <a href="{{ url_for('subscription.plans') }}" class="stat-link">Upgrade Plan</a>
+            </div>
+            
+            <div class="stat-card">
+                <h3>API Requests Today</h3>
+                <div class="stat-value">{{ daily_usage }}</div>
+                <div class="stat-detail">
+                    {% if limits.daily == -1 %}
+                    Limit: Unlimited
+                    {% else %}
+                    Limit: {{ limits.daily }}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>API Requests This Month</h3>
+                <div class="stat-value">{{ monthly_usage }}</div>
+                <div class="stat-detail">
+                    {% if limits.monthly == -1 %}
+                    Limit: Unlimited
+                    {% else %}
+                    Limit: {{ limits.monthly }}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Active API Keys</h3>
+                <div class="stat-value">{{ api_keys_count }}</div>
+                <a href="{{ url_for('developer.portal') }}" class="stat-link">Manage Keys</a>
+            </div>
+        </div>
+        
+        <div class="dashboard-actions">
+            <div class="action-card">
+                <h3>Developer Portal</h3>
+                <p>Manage your API keys, view usage statistics, and access documentation</p>
+                <a href="{{ url_for('developer.portal') }}" class="btn btn-primary">Go to Developer Portal</a>
+            </div>
+            
+            <div class="action-card">
+                <h3>Subscription</h3>
+                <p>View your current plan, upgrade, or manage billing</p>
+                <a href="{{ url_for('subscription.manage') }}" class="btn btn-secondary">Manage Subscription</a>
+            </div>
+            
+            <div class="action-card">
+                <h3>Documentation</h3>
+                <p>Learn how to integrate SixFinger API into your applications</p>
+                <a href="{{ url_for('main.documentation') }}" class="btn btn-secondary">View Docs</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

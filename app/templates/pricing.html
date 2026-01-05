@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}Pricing - SixFinger{% endblock %}
+
+{% block content %}
+<div class="pricing-container">
+    <div class="container">
+        <h1>Choose Your Plan</h1>
+        <p class="section-subtitle">Select the perfect plan for your needs</p>
+        
+        <div class="currency-selector">
+            <a href="?currency=USD" class="{% if currency == 'USD' %}active{% endif %}">USD ($)</a>
+            <a href="?currency=TRY" class="{% if currency == 'TRY' %}active{% endif %}">TRY (₺)</a>
+        </div>
+        
+        <div class="pricing-grid">
+            {% for plan_key, plan in plans.items() %}
+            <div class="pricing-card {% if plan_key == 'pro' %}featured{% endif %}">
+                {% if plan_key == 'pro' %}
+                <div class="featured-badge">Most Popular</div>
+                {% endif %}
+                
+                <h3>{{ plan.name }}</h3>
+                
+                <div class="price">
+                    {% if currency == 'USD' %}
+                        <span class="currency">$</span>
+                        <span class="amount">{{ plan.price_usd }}</span>
+                    {% else %}
+                        <span class="amount">{{ plan.price_try }}</span>
+                        <span class="currency">₺</span>
+                    {% endif %}
+                    <span class="period">/month</span>
+                </div>
+                
+                <ul class="features-list">
+                    {% for feature in plan.features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                
+                {% if current_user.is_authenticated %}
+                    {% if current_user.get_plan() == plan_key %}
+                        <button class="btn btn-block btn-secondary" disabled>Current Plan</button>
+                    {% elif plan.price_usd == 0 %}
+                        <button class="btn btn-block btn-secondary" disabled>Free Plan</button>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('subscription.create_checkout_session') }}">
+                            <input type="hidden" name="plan" value="{{ plan_key }}">
+                            <input type="hidden" name="currency" value="{{ currency }}">
+                            <button type="submit" class="btn btn-block {% if plan_key == 'pro' %}btn-primary{% else %}btn-secondary{% endif %}">
+                                Subscribe Now
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ url_for('auth.signup') }}" class="btn btn-block {% if plan_key == 'pro' %}btn-primary{% else %}btn-secondary{% endif %}">
+                        {% if plan.price_usd == 0 %}Get Started{% else %}Subscribe Now{% endif %}
+                    </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="pricing-faq">
+            <h2>Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <h3>Can I change my plan later?</h3>
+                <p>Yes, you can upgrade or downgrade your plan at any time from your account dashboard.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>What payment methods do you accept?</h3>
+                <p>We accept all major credit cards through Stripe. Both USD and TRY currencies are supported.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Is there a free trial?</h3>
+                <p>Yes! Our Free plan gives you 100 requests per day to try out the API with no credit card required.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>What happens if I exceed my limit?</h3>
+                <p>Your requests will be rate-limited until your next billing cycle. Consider upgrading to a higher plan.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.pricing-container {
+    padding: 3rem 0;
+}
+
+.currency-selector {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.currency-selector a {
+    padding: 0.75rem 2rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.currency-selector a.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.currency-selector a:hover {
+    border-color: var(--primary-color);
+}
+
+.pricing-faq {
+    max-width: 800px;
+    margin: 4rem auto 0;
+}
+
+.pricing-faq h2 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.faq-item {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 1rem;
+}
+
+.faq-item h3 {
+    margin-bottom: 0.5rem;
+}
+
+.faq-item p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+</style>
+{% endblock %}

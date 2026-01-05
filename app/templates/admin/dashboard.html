@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>Admin Dashboard</h1>
+        <p class="subtitle">System overview and management</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="stat-value">{{ total_users }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Active Users</h3>
+                <div class="stat-value">{{ active_users }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Verified Users</h3>
+                <div class="stat-value">{{ verified_users }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>API Requests Today</h3>
+                <div class="stat-value">{{ api_requests_today }}</div>
+            </div>
+        </div>
+        
+        <div class="admin-sections">
+            <div class="admin-section">
+                <h2>Subscription Statistics</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Plan</th>
+                            <th>Subscribers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for plan, count in subscription_stats %}
+                        <tr>
+                            <td>{{ plan|upper }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="admin-section">
+                <h2>Recent Users</h2>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in recent_users %}
+                        <tr>
+                            <td><a href="{{ url_for('admin.user_detail', user_id=user.id) }}">{{ user.username }}</a></td>
+                            <td>{{ user.email }}</td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-error">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.users') }}" class="btn btn-primary">Manage Users</a>
+            <a href="{{ url_for('admin.analytics') }}" class="btn btn-secondary">View Analytics</a>
+            <a href="{{ url_for('admin.settings') }}" class="btn btn-secondary">Settings</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-sections {
+    margin: 3rem 0;
+}
+
+.admin-section {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.admin-section h2 {
+    margin-bottom: 1rem;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+</style>
+{% endblock %}
