@@ -5,14 +5,14 @@ Advanced AI API Platform with full-featured Flask web application.
 ## Overview
 
 SixFinger-Alpha is now a complete web platform offering:
-- 🔐 **User Authentication**: Secure login/signup with password hashing
-- 💳 **Subscription Management**: Multiple pricing tiers with Stripe integration
-- 🔑 **Developer Portal**: API key management and usage tracking
-- 👑 **Admin Panel**: Comprehensive user and system management
-- 🌐 **Multi-Currency**: Support for USD and TRY (1$ = 47₺)
-- 🔒 **Enterprise Security**: CSRF protection, rate limiting, secure headers
-- 📊 **Analytics**: Detailed usage statistics and monitoring
-- 🚀 **RESTful API**: AI-powered endpoints for research, code generation, and analysis
+- **User Authentication**: Secure login/signup with password hashing
+- **Subscription Management**: Multiple pricing tiers with Stripe integration
+- **Developer Portal**: API key management and usage tracking
+- **Admin Panel**: Comprehensive user and system management
+- **Multi-Currency**: Support for USD and TRY (1$ = 47₺)
+- **Enterprise Security**: CSRF protection, rate limiting, secure headers
+- **Analytics**: Detailed usage statistics and monitoring
+- **RESTful API**: AI-powered endpoints for research, code generation, and analysis
 
 The platform uses the powerful DeepSeek-R1-0528-Turbo model via DeepInfra API to deliver intelligent AI capabilities.
 
@@ -39,10 +39,10 @@ The platform uses the powerful DeepSeek-R1-0528-Turbo model via DeepInfra API to
   - XSS protection headers
 
 ### API Capabilities
-- 🔍 **Research**: Comprehensive web research on any topic
-- 💻 **Code Generation**: Generate code in multiple languages
-- 📊 **Analysis**: Deep analysis of data and content
-- ✍️ **Custom Queries**: Flexible AI-powered responses
+- **Research**: Comprehensive web research on any topic
+- **Code Generation**: Generate code in multiple languages
+- **Analysis**: Deep analysis of data and content
+- **Custom Queries**: Flexible AI-powered responses
 
 ## Installation
 
@@ -244,4 +244,4 @@ MIT License - feel free to use this in your own projects!
 
 ---
 
-**Built with ❤️ by SixFinger Dev**
+**Built with passion by SixFinger Dev**

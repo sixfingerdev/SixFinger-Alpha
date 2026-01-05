@@ -123,14 +123,14 @@ Please:
 
 Execute the task now:"""
         
-        print(f"🤖 Autonomous Agent Processing Task...\n")
-        print(f"📋 Task: {task}\n")
+        print(f"[AGENT] Processing Task...\n")
+        print(f"[TASK] {task}\n")
         print("=" * 60)
-        print("🎯 Response:\n")
+        print("[RESPONSE]\n")
         
         result = self.query(enhanced_prompt, stream=True)
         print("\n" + "=" * 60)
-        print("✅ Task Complete\n")
+        print("[COMPLETE] Task Complete\n")
         
         return result
     
@@ -158,7 +158,7 @@ Execute the task now:"""
 def main():
     """Command-line interface for the autonomous agent."""
     print("=" * 60)
-    print("🚀 SixFinger Autonomous AI Agent")
+    print("SixFinger Autonomous AI Agent")
     print("=" * 60)
     print()
     

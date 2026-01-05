@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template, current_app
+from flask import Blueprint, render_template, current_app, request, jsonify
 from flask_login import login_required, current_user
 from app.models import APIUsage, APIKey
 from datetime import datetime
 from sqlalchemy import func
+from autonomous_agent import AutonomousAgent
+import time
 
 main_bp = Blueprint('main', __name__)
 
@@ -65,3 +67,78 @@ def about():
 def contact():
     """Contact page"""
     return render_template('contact.html')
+
+@main_bp.route('/playground')
+@login_required
+def playground():
+    """AI Playground - Interactive AI interface"""
+    return render_template('playground.html')
+
+@main_bp.route('/playground/query', methods=['POST'])
+@login_required
+def playground_query():
+    """Handle AI queries from the playground"""
+    from app.models import db
+    
+    # Check rate limits
+    if not current_user.can_make_request():
+        return jsonify({
+            'success': False,
+            'error': 'Rate limit exceeded. Please upgrade your plan.'
+        }), 429
+    
+    data = request.get_json()
+    if not data or 'prompt' not in data:
+        return jsonify({
+            'success': False,
+            'error': 'Missing prompt'
+        }), 400
+    
+    prompt = data['prompt']
+    mode = data.get('mode', 'general')  # general, research, code, article, websearch, agent
+    
+    try:
+        agent = AutonomousAgent()
+        
+        # Customize prompt based on mode
+        if mode == 'research':
+            enhanced_prompt = f"Research and provide comprehensive information about: {prompt}"
+        elif mode == 'code':
+            enhanced_prompt = f"Generate code for the following requirements: {prompt}"
+        elif mode == 'article':
+            enhanced_prompt = f"Write a detailed, well-structured article about: {prompt}"
+        elif mode == 'websearch':
+            enhanced_prompt = f"Perform a web search and summarize information about: {prompt}"
+        elif mode == 'agent':
+            enhanced_prompt = f"As an autonomous agent, analyze and execute this task: {prompt}"
+        else:
+            enhanced_prompt = prompt
+        
+        start_time = time.time()
+        response = agent.query(enhanced_prompt, stream=False)
+        response_time = time.time() - start_time
+        
+        # Log usage
+        usage = APIUsage(
+            user_id=current_user.id,
+            api_key_id=None,
+            endpoint='/playground/query',
+            method='POST',
+            status_code=200,
+            response_time=response_time
+        )
+        db.session.add(usage)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'response': response,
+            'mode': mode,
+            'response_time': round(response_time, 2)
+        }), 200
+    
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
