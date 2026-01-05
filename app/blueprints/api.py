@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from functools import wraps
-from app.models import db, APIKey, User, APIUsage
+from app.models import APIKey, User, APIUsage
 from datetime import datetime
 import time
 from autonomous_agent import AutonomousAgent
@@ -19,15 +19,15 @@ def require_api_key(f):
                 'message': 'Please provide an API key in the X-API-Key header or api_key parameter'
             }), 401
         
-        key = APIKey.query.filter_by(key=api_key, is_active=True).first()
+        key = APIKey.query_by_key(api_key)
         
-        if not key:
+        if not key or not key.is_active:
             return jsonify({
                 'error': 'Invalid API key',
                 'message': 'The provided API key is invalid or has been deactivated'
             }), 401
         
-        user = User.query.get(key.user_id)
+        user = User.query_by_id(key.user_id)
         
         if not user or not user.is_active:
             return jsonify({
@@ -67,8 +67,6 @@ def log_api_usage(endpoint, method, status_code, response_time):
             status_code=status_code,
             response_time=response_time
         )
-        db.session.add(usage)
-        db.session.commit()
 
 @api_bp.route('/health', methods=['GET'])
 def health():
@@ -251,22 +249,15 @@ def analyze():
 @require_api_key
 def get_usage():
     """Get API usage statistics for the authenticated user"""
-    from sqlalchemy import func
     from datetime import timedelta
     
     # Get today's usage
     today = datetime.utcnow().date()
-    daily_usage = APIUsage.query.filter(
-        APIUsage.user_id == request.api_user.id,
-        func.date(APIUsage.timestamp) == today
-    ).count()
+    daily_usage = APIUsage.count_by_date(request.api_user.id, today)
     
     # Get monthly usage
     month_start = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    monthly_usage = APIUsage.query.filter(
-        APIUsage.user_id == request.api_user.id,
-        APIUsage.timestamp >= month_start
-    ).count()
+    monthly_usage = len(APIUsage.query_by_user_id(request.api_user.id, start_date=month_start))
     
     # Get plan limits
     plan = request.api_user.get_plan()

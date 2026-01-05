@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import login_required, current_user
-from app.models import db, Subscription
+from app.models import Subscription
 import stripe
 from datetime import datetime
 
@@ -72,10 +72,8 @@ def create_checkout_session():
             
             if not current_user.subscription:
                 subscription = Subscription(user_id=current_user.id)
-                db.session.add(subscription)
             
             current_user.subscription.stripe_customer_id = customer_id
-            db.session.commit()
         
         # Create checkout session
         checkout_session = stripe.checkout.Session.create(
@@ -154,7 +152,6 @@ def cancel():
         )
         
         subscription.cancel_at_period_end = True
-        db.session.commit()
         
         flash('Subscription will be cancelled at the end of the billing period', 'info')
     
@@ -202,18 +199,15 @@ def handle_checkout_complete(session):
     plan = session['metadata'].get('plan')
     
     if user_id and plan:
-        subscription = Subscription.query.filter_by(user_id=user_id).first()
+        subscription = Subscription.query_by_user_id(int(user_id))
         if subscription:
             subscription.plan = plan
             subscription.is_active = True
             subscription.stripe_subscription_id = session.get('subscription')
-            db.session.commit()
 
 def handle_subscription_updated(stripe_subscription):
     """Handle subscription update"""
-    subscription = Subscription.query.filter_by(
-        stripe_subscription_id=stripe_subscription['id']
-    ).first()
+    subscription = Subscription.query_by_stripe_subscription_id(stripe_subscription['id'])
     
     if subscription:
         subscription.current_period_start = datetime.fromtimestamp(
@@ -223,16 +217,12 @@ def handle_subscription_updated(stripe_subscription):
             stripe_subscription['current_period_end']
         )
         subscription.cancel_at_period_end = stripe_subscription.get('cancel_at_period_end', False)
-        db.session.commit()
 
 def handle_subscription_deleted(stripe_subscription):
     """Handle subscription deletion"""
-    subscription = Subscription.query.filter_by(
-        stripe_subscription_id=stripe_subscription['id']
-    ).first()
+    subscription = Subscription.query_by_stripe_subscription_id(stripe_subscription['id'])
     
     if subscription:
         subscription.plan = 'free'
         subscription.is_active = False
         subscription.stripe_subscription_id = None
-        db.session.commit()
