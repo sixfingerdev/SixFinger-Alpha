@@ -37,7 +37,7 @@ class User(UserMixin):
         self.email = email.lower()
         self.username = username
         self.password_hash = password_hash or ''
-        self.is_active = is_active
+        self._is_active = is_active
         self.is_admin = is_admin
         self.email_verified = email_verified
         self.created_at = created_at or datetime.utcnow()
@@ -47,6 +47,16 @@ class User(UserMixin):
         users_storage[self.id] = self
         users_by_email[self.email] = self.id
         users_by_username[self.username] = self.id
+    
+    @property
+    def is_active(self):
+        """Override UserMixin is_active property"""
+        return self._is_active
+    
+    @is_active.setter
+    def is_active(self, value):
+        """Setter for is_active"""
+        self._is_active = value
     
     def set_password(self, password):
         """Hash and set password"""
@@ -125,7 +135,7 @@ class User(UserMixin):
     @staticmethod
     def count_active():
         """Count active users"""
-        return sum(1 for user in users_storage.values() if user.is_active)
+        return sum(1 for user in users_storage.values() if user._is_active)
     
     @staticmethod
     def count_verified():
