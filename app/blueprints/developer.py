@@ -47,14 +47,18 @@ def create_api_key():
         return redirect(url_for('developer.portal'))
     
     # Create API key
-    api_key = APIKey(
-        user_id=current_user.id,
-        key=APIKey.generate_key(),
-        name=name
-    )
+    try:
+        api_key = APIKey(
+            user_id=current_user.id,
+            key=APIKey.generate_key(),
+            name=name
+        )
+        
+        flash(f'API key created successfully: {api_key.key}', 'success')
+        flash('Make sure to copy your API key now. You will not be able to see it again!', 'warning')
+    except ValueError as e:
+        flash(str(e), 'error')
     
-    flash(f'API key created successfully: {api_key.key}', 'success')
-    flash('Make sure to copy your API key now. You will not be able to see it again!', 'warning')
     return redirect(url_for('developer.portal'))
 
 @developer_bp.route('/api-keys/<int:key_id>/delete', methods=['POST'])

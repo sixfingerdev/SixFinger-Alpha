@@ -34,25 +34,29 @@ def create_admin():
             print("Password must be at least 8 characters long")
             sys.exit(1)
         
-        user = User(
-            email=admin_email,
-            username=username,
-            is_admin=True,
-            is_active=True,
-            email_verified=True
-        )
-        user.set_password(password)
-        
-        # Create subscription
-        subscription = Subscription(
-            user_id=user.id,
-            plan='enterprise'
-        )
-        
-        print(f"\nAdmin user created successfully!")
-        print(f"Username: {username}")
-        print(f"Email: {admin_email}")
-        print(f"You can now log in at /login")
+        try:
+            user = User(
+                email=admin_email,
+                username=username,
+                is_admin=True,
+                is_active=True,
+                email_verified=True
+            )
+            user.set_password(password)
+            
+            # Create subscription
+            subscription = Subscription(
+                user_id=user.id,
+                plan='enterprise'
+            )
+            
+            print(f"\nAdmin user created successfully!")
+            print(f"Username: {username}")
+            print(f"Email: {admin_email}")
+            print(f"You can now log in at /login")
+        except ValueError as e:
+            print(f"Error creating admin user: {e}")
+            sys.exit(1)
 
 if __name__ == "__main__":
     create_admin()

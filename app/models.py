@@ -31,6 +31,12 @@ class User(UserMixin):
     def __init__(self, email, username, password_hash=None, is_active=True, is_admin=False, 
                  email_verified=False, created_at=None, last_login=None, id=None):
         with _storage_lock:
+            # Check for existing users with same email or username
+            if email.lower() in users_by_email:
+                raise ValueError(f"User with email {email} already exists")
+            if username in users_by_username:
+                raise ValueError(f"User with username {username} already exists")
+            
             if id is None:
                 self.id = _user_id_counter[0]
                 _user_id_counter[0] += 1
@@ -60,12 +66,14 @@ class User(UserMixin):
     
     @is_active.setter
     def is_active(self, value):
-        """Setter for is_active"""
-        self._is_active = value
+        """Setter for is_active (thread-safe)"""
+        with _storage_lock:
+            self._is_active = value
     
     def set_password(self, password):
-        """Hash and set password"""
-        self.password_hash = generate_password_hash(password)
+        """Hash and set password (thread-safe)"""
+        with _storage_lock:
+            self.password_hash = generate_password_hash(password)
     
     def check_password(self, password):
         """Check password against hash"""
@@ -166,6 +174,10 @@ class Subscription:
                  current_period_start=None, current_period_end=None,
                  cancel_at_period_end=False, created_at=None, updated_at=None, id=None):
         with _storage_lock:
+            # Check if subscription already exists for this user
+            if user_id in subscriptions_storage:
+                raise ValueError(f"Subscription already exists for user {user_id}")
+            
             if id is None:
                 self.id = _subscription_id_counter[0]
                 _subscription_id_counter[0] += 1
@@ -241,6 +253,10 @@ class APIKey:
     
     def __init__(self, user_id, key, name, is_active=True, created_at=None, last_used=None, id=None):
         with _storage_lock:
+            # Check if key already exists
+            if key in api_keys_by_key:
+                raise ValueError(f"API key already exists")
+            
             if id is None:
                 self.id = _api_key_id_counter[0]
                 _api_key_id_counter[0] += 1

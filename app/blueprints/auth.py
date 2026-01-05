@@ -101,24 +101,28 @@ def signup():
             return render_template('auth/signup.html')
         
         # Create user
-        user = User(username=username, email=email)
-        user.set_password(password)
-        
-        # Create free subscription
-        subscription = Subscription(user_id=user.id, plan='free')
-        
-        # Create email verification token
-        token = EmailVerification.generate_token()
-        verification = EmailVerification(
-            user_id=user.id,
-            token=token,
-            expires_at=datetime.utcnow() + timedelta(days=1)
-        )
-        
-        # TODO: Send verification email
-        
-        flash('Account created successfully! Please check your email to verify your account.', 'success')
-        return redirect(url_for('auth.login'))
+        try:
+            user = User(username=username, email=email)
+            user.set_password(password)
+            
+            # Create free subscription
+            subscription = Subscription(user_id=user.id, plan='free')
+            
+            # Create email verification token
+            token = EmailVerification.generate_token()
+            verification = EmailVerification(
+                user_id=user.id,
+                token=token,
+                expires_at=datetime.utcnow() + timedelta(days=1)
+            )
+            
+            # TODO: Send verification email
+            
+            flash('Account created successfully! Please check your email to verify your account.', 'success')
+            return redirect(url_for('auth.login'))
+        except ValueError as e:
+            flash(str(e), 'error')
+            return render_template('auth/signup.html')
     
     return render_template('auth/signup.html')
 
