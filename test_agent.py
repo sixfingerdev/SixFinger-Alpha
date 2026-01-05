@@ -164,8 +164,10 @@ class TestCompactVersion(unittest.TestCase):
     def test_walrus_operator(self):
         """Test that walrus operator works (Python 3.8+)."""
         # Test walrus operator assignment
+        # The value 6 represents the length of "data: " prefix in SSE format
+        SSE_PREFIX_LEN = 6
         test_value = "data: test"
-        if (c := test_value[6:]) != "[DONE]":
+        if (c := test_value[SSE_PREFIX_LEN:]) != "[DONE]":
             self.assertEqual(c, "test")
 
 

@@ -23,6 +23,8 @@ def demo_compact_version():
     
     prompt = input("Enter your task: ")
     
+    # This is the exact compact code from the problem statement
+    # It preserves the original pattern including compact exception handling
     for l in r.post(
         "https://api.deepinfra.com/v1/openai/chat/completions",
         headers={"X-Deepinfra-Source": "web-page"},
@@ -33,7 +35,7 @@ def demo_compact_version():
         },
         stream=1
     ).iter_lines():
-        if l and (c := l.decode()[6:]) != "[DONE]":
+        if l and (c := l.decode()[6:]) != "[DONE]":  # 6 is len("data: ") SSE prefix
             try:
                 print(json.loads(c)['choices'][0]['delta']['content'], end='')
             except (json.JSONDecodeError, KeyError, IndexError):

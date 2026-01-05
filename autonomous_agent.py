@@ -19,6 +19,10 @@ class AutonomousAgent:
     - Task decomposition
     """
     
+    # SSE (Server-Sent Events) prefix length for streaming responses
+    # Each line starts with "data: " which we need to skip
+    SSE_DATA_PREFIX_LEN = 6  # len("data: ")
+    
     def __init__(self, model: str = "deepseek-ai/DeepSeek-R1-0528-Turbo"):
         self.model = model
         self.api_url = "https://api.deepinfra.com/v1/openai/chat/completions"
@@ -75,7 +79,8 @@ class AutonomousAgent:
         full_response = []
         
         for line in response.iter_lines():
-            if line and (chunk := line.decode()[6:]) != "[DONE]":
+            # Skip "data: " prefix from SSE (Server-Sent Events) format
+            if line and (chunk := line.decode()[self.SSE_DATA_PREFIX_LEN:]) != "[DONE]":
                 try:
                     data = json.loads(chunk)
                     content = data['choices'][0]['delta'].get('content', '')
