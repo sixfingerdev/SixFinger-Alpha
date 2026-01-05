@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Admin - SixFinger{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="container">
+        <h1>System Analytics</h1>
+        
+        <div class="filter-options">
+            <a href="{{ url_for('admin.analytics', days=7) }}" class="btn btn-small {% if days == 7 %}btn-primary{% endif %}">7 Days</a>
+            <a href="{{ url_for('admin.analytics', days=30) }}" class="btn btn-small {% if days == 30 %}btn-primary{% endif %}">30 Days</a>
+            <a href="{{ url_for('admin.analytics', days=90) }}" class="btn btn-small {% if days == 90 %}btn-primary{% endif %}">90 Days</a>
+        </div>
+        
+        <div class="analytics-section">
+            <h2>Daily Registrations</h2>
+            {% if daily_registrations %}
+                <div class="chart-placeholder">
+                    <p>Last {{ days }} days registration data</p>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Registrations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for date, count in daily_registrations[-10:] %}
+                        <tr>
+                            <td>{{ date }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No registration data available.</p>
+            {% endif %}
+        </div>
+        
+        <div class="analytics-section">
+            <h2>Daily API Usage</h2>
+            {% if daily_api_usage %}
+                <div class="chart-placeholder">
+                    <p>Last {{ days }} days API usage</p>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Requests</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for date, count in daily_api_usage[-10:] %}
+                        <tr>
+                            <td>{{ date }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No API usage data available.</p>
+            {% endif %}
+        </div>
+        
+        <div class="analytics-section">
+            <h2>Top Users by API Usage</h2>
+            {% if top_users %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Total Requests</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for username, email, count in top_users %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ username }}</td>
+                            <td>{{ email }}</td>
+                            <td>{{ count }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No usage data available.</p>
+            {% endif %}
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.filter-options {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.analytics-section {
+    background-color: var(--card-bg);
+    padding: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.analytics-section h2 {
+    margin-bottom: 1rem;
+}
+
+.chart-placeholder {
+    background-color: var(--bg-color);
+    padding: 4rem;
+    text-align: center;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+</style>
+{% endblock %}

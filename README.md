@@ -1,24 +1,48 @@
-# SixFinger-Alpha 🚀
+# SixFinger-Alpha
 
-Autonomous AI agent for complex task execution using DeepSeek-R1 model.
+Advanced AI API Platform with full-featured Flask web application.
 
 ## Overview
 
-SixFinger-Alpha is an autonomous AI agent that can parse tasks and execute various operations including:
-- 🔍 **Web Research**: Gather and synthesize information on any topic
-- 💻 **Code Generation**: Write code based on requirements
-- ✍️ **Content Writing**: Create informative, creative, or technical content
-- 📊 **Analysis**: Analyze data, text, or concepts in depth
+SixFinger-Alpha is now a complete web platform offering:
+- 🔐 **User Authentication**: Secure login/signup with password hashing
+- 💳 **Subscription Management**: Multiple pricing tiers with Stripe integration
+- 🔑 **Developer Portal**: API key management and usage tracking
+- 👑 **Admin Panel**: Comprehensive user and system management
+- 🌐 **Multi-Currency**: Support for USD and TRY (1$ = 47₺)
+- 🔒 **Enterprise Security**: CSRF protection, rate limiting, secure headers
+- 📊 **Analytics**: Detailed usage statistics and monitoring
+- 🚀 **RESTful API**: AI-powered endpoints for research, code generation, and analysis
 
-The agent uses the powerful DeepSeek-R1-0528-Turbo model via DeepInfra API to understand tasks and deliver intelligent responses.
+The platform uses the powerful DeepSeek-R1-0528-Turbo model via DeepInfra API to deliver intelligent AI capabilities.
 
 ## Features
 
-- **Task Parsing**: Automatically understands and categorizes user requests
-- **Multi-Modal Execution**: Handles research, coding, writing, and analysis tasks
-- **Streaming Responses**: Real-time output as the AI generates responses
-- **Simple Interface**: Easy-to-use command-line and programmatic APIs
-- **Compact Core**: Built on efficient, minimal API code
+### Web Platform
+- **Authentication System**: Secure user registration and login with email verification
+- **Subscription Plans**: Free, Starter ($9), Pro ($49), Enterprise ($299)
+- **Payment Processing**: Stripe integration with USD and TRY currency support
+- **Developer Portal**: 
+  - Generate and manage API keys
+  - View usage statistics
+  - Monitor request history
+- **Admin Panel**:
+  - User management
+  - Subscription control
+  - System analytics
+  - Usage monitoring
+- **Security**:
+  - Password hashing with bcrypt
+  - CSRF protection
+  - Rate limiting
+  - Secure session management
+  - XSS protection headers
+
+### API Capabilities
+- 🔍 **Research**: Comprehensive web research on any topic
+- 💻 **Code Generation**: Generate code in multiple languages
+- 📊 **Analysis**: Deep analysis of data and content
+- ✍️ **Custom Queries**: Flexible AI-powered responses
 
 ## Installation
 
@@ -29,32 +53,55 @@ cd SixFinger-Alpha
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Set up environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Run the application
+python run.py
 ```
+
+Visit `http://localhost:5000` in your browser.
 
 ## Quick Start
 
-### Command-Line Usage
+### Web Application
+
+1. **Install Dependencies**:
+```bash
+pip install -r requirements.txt
+```
+
+2. **Configure Environment**:
+```bash
+cp .env.example .env
+# Edit .env with your settings (Stripe keys, email config, etc.)
+```
+
+3. **Run the Application**:
+```bash
+python run.py
+```
+
+Visit `http://localhost:5000` to access the web interface.
+
+4. **Create Admin User**:
+```bash
+python create_admin.py
+```
+
+### Command-Line Usage (Legacy)
+
+The original autonomous agent is still available:
 
 ```bash
 # Simple task execution
 python autonomous_agent.py "Research the latest AI developments"
 
-# Code generation
-python autonomous_agent.py "Write a Python function to reverse a string"
-
-# Analysis
-python autonomous_agent.py "Analyze the impact of quantum computing"
-```
-
-### Interactive Mode
-
-```bash
+# Interactive mode
 python example.py
 ```
-
-The interactive demo offers two modes:
-1. **Compact Version**: The minimal API code from the original specification
-2. **Autonomous Agent**: Full-featured agent with enhanced capabilities
 
 ### Programmatic Usage
 
@@ -104,59 +151,78 @@ This minimal code is wrapped in a robust, user-friendly interface that provides 
 
 ```
 SixFinger-Alpha/
-├── autonomous_agent.py    # Main agent implementation
-├── example.py            # Interactive examples and demos
-├── requirements.txt      # Python dependencies
-└── README.md            # Documentation
+├── app/
+│   ├── __init__.py              # Application factory
+│   ├── models.py                # Database models
+│   ├── blueprints/              # Application modules
+│   │   ├── auth.py              # Authentication
+│   │   ├── main.py              # Main routes
+│   │   ├── api.py               # API endpoints
+│   │   ├── admin.py             # Admin panel
+│   │   ├── developer.py         # Developer portal
+│   │   └── subscription.py      # Subscription management
+│   ├── templates/               # HTML templates
+│   └── static/                  # CSS, JS, images
+├── autonomous_agent.py          # Original AI agent (CLI)
+├── example.py                   # Interactive examples
+├── run.py                       # Application entry point
+├── config.py                    # Configuration
+├── requirements.txt             # Dependencies
+└── README.md                    # Documentation
 ```
 
-### AutonomousAgent Class
+## API Usage
 
-The core `AutonomousAgent` class provides:
+### Authentication
+All API requests require authentication using an API key:
 
-- `parse_and_execute(task)`: Main entry point for task execution
-- `query(prompt)`: Direct API interaction with streaming
-- `research(topic)`: Specialized web research mode
-- `generate_code(requirements)`: Code generation mode
-- `write(topic, style)`: Content writing mode
-- `analyze(content)`: Analysis mode
-
-## Use Cases
-
-### 1. Development Assistant
 ```bash
-python autonomous_agent.py "Write unit tests for a user authentication function"
+curl -H "X-API-Key: your_api_key_here" \
+     https://yourdomain.com/api/v1/query
 ```
 
-### 2. Research Tool
+### Endpoints
+
+**POST /api/v1/query** - General AI query
 ```bash
-python autonomous_agent.py "Research best practices for microservices architecture"
+curl -X POST https://yourdomain.com/api/v1/query \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Explain quantum computing"}'
 ```
 
-### 3. Content Creator
+**POST /api/v1/research** - Research a topic
 ```bash
-python autonomous_agent.py "Write a blog post about sustainable technology"
+curl -X POST https://yourdomain.com/api/v1/research \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"topic": "Latest AI developments"}'
 ```
 
-### 4. Code Analyzer
+**POST /api/v1/code** - Generate code
 ```bash
-python autonomous_agent.py "Analyze this code for potential improvements: [your code]"
+curl -X POST https://yourdomain.com/api/v1/code \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"requirements": "Create a REST API endpoint"}'
 ```
 
-## How It Works
+**GET /api/v1/usage** - Check API usage
+```bash
+curl -H "X-API-Key: your_api_key" \
+     https://yourdomain.com/api/v1/usage
+```
 
-1. **Task Input**: User provides a task description
-2. **Parse**: Agent analyzes the task to understand intent and requirements
-3. **Execute**: Agent determines the best approach (research/code/write/analyze)
-4. **Stream**: Real-time output as the AI generates the response
-5. **Deliver**: Complete, actionable results delivered to the user
+## Subscription Plans
 
-## API Rate Limits
+| Plan       | Price (USD) | Price (TRY) | Daily Limit | Monthly Limit |
+|------------|-------------|-------------|-------------|---------------|
+| Free       | $0          | 0₺          | 100         | 1,000         |
+| Starter    | $9          | 423₺        | 1,000       | 25,000        |
+| Pro        | $49         | 2,303₺      | 10,000      | 250,000       |
+| Enterprise | $299        | 14,053₺     | Unlimited   | Unlimited     |
 
-This agent uses the DeepInfra API with DeepSeek-R1 model. Be mindful of:
-- Rate limits imposed by DeepInfra
-- Streaming responses may take time for complex tasks
-- Network connectivity requirements
+*Exchange rate: 1 USD = 47 TRY*
 
 ## Contributing
 
